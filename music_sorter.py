@@ -4,27 +4,29 @@ import eyed3
 import os
 import shutil
 
-
-
 class Music_Sorter:
 
-    #constructor
+    #constructor using instance variables
     def __init__(self):
-        self.parent_dir = ""
+        self.parent_dir = os.getcwd()
         self.counter = 0
 
-    def sort(self):
+    def file(self):
+        print("Target folder: " + self.parent_dir)
         #loop through files
-        for path in os.listdir(self.parent_dir):
+        for song in os.listdir(self.parent_dir):
+            song = self.parent_dir + "/" + song
+            print("for loop entered for " + song)
             #if file and mp3
-            if os.path.isfile(path) and path.endswith(".mp3"):
+            if os.path.isfile(song) and song.endswith(".mp3"):
+                print(song + " is loaded")
                 #give file to eyeD3
-                file_name = eyed3.load(path)
+                file_name = eyed3.load(song)
 
                 try:
                     #get artist name
                     artist = file_name.tag.artist
-                    ######print(artist)
+                    print(artist)
                     
                     #check if folder exists
                     if os.path.isdir(artist):
@@ -37,15 +39,15 @@ class Music_Sorter:
                         print("Creating " + folder)
 
                     #copy file
-                    shutil.copy2(path,folder)
-                    print("Filed " + path + " successfully.")
+                    shutil.copy2(song,folder)
+                    print("Filed " + song + " successfully.")
                     self.counter += 1
 
                     #delete original file
-                    os.remove(path)
+                    os.remove(song)
                         
                 except :
-                    print("File \"" + path + "\" does not have artist information. No action taken.")
+                    print("File \"" + song + "\" does not have artist information. No action taken.")
 
         print("Moved " + str(self.counter) + " files into Artist folders.")
 
@@ -55,6 +57,6 @@ class Music_Sorter:
 #print("Running in " + parent_dir)
 
 #test cases
-test_sort = Music_Sorter()
-test_sort.parent_dir =  os.getcwd()
-test_sort.sort()
+#test_sort = Music_Sorter()
+#test_sort.parent_dir =  os.getcwd()
+#test_sort.file()
