@@ -1,20 +1,28 @@
 # C:\Users\Dylan\AppData\Local\Programs\Python\Python310
 
+from tkinter.constants import NORMAL
 import eyed3
 import os
 import shutil
+import tkinter
 
 class Music_Sorter:
 
     #constructor using instance variables
     def __init__(self):
         self.parent_dir = os.getcwd()
-        self.counter = 0
+        self.counter = 0 #counts files sorted
+        self.output_field = tkinter.Text() #for gui output
+        self.failed_songs = []  #list for songs that failed to sort (missing info?)
+        self.failed_counter = 0 #counts failures
 
     def file(self):
         print("Target folder: " + self.parent_dir)
+        self.output_field.config(state=NORMAL)
+        self.output_field.insert(tkinter.END, ">>Target folder: " + self.parent_dir)
         #loop through files
         for song in os.listdir(self.parent_dir):
+            just_song = song
             song = self.parent_dir + "/" + song
             print("for loop entered for " + song)
             #if file and mp3
@@ -41,6 +49,7 @@ class Music_Sorter:
                     #copy file
                     shutil.copy2(song,folder)
                     print("Filed " + song + " successfully.")
+                    self.output_field.insert(tkinter.END, "\n>>Filed " + just_song + " in " + artist + " folder.")
                     self.counter += 1
 
                     #delete original file
@@ -48,15 +57,10 @@ class Music_Sorter:
                         
                 except :
                     print("File \"" + song + "\" does not have artist information. No action taken.")
+                    self.output_field.insert(tkinter.END, "\n>>File \"" + just_song + "\" does not have artist information. No action taken.")
+                    self.failed_songs.append(song)
+                    self.failed_counter += 1
 
         print("Moved " + str(self.counter) + " files into Artist folders.")
-
-
-#assume running from target folder
-#parent_dir = os.getcwd()
-#print("Running in " + parent_dir)
-
-#test cases
-#test_sort = Music_Sorter()
-#test_sort.parent_dir =  os.getcwd()
-#test_sort.file()
+        self.output_field.insert(tkinter.END, "\n>>Moved " + str(self.counter) + " file(s) into Artist folders.")
+        self.output_field.insert(tkinter.END, "\n>>" + str(self.failed_counter) + " song(s) failed to file properly.")

@@ -9,8 +9,8 @@
 
 from music_sorter import Music_Sorter
 import tkinter
-from tkinter import filedialog
-from tkinter.constants import EW, LEFT, RIGHT
+from tkinter import Scrollbar, filedialog
+from tkinter.constants import DISABLED, EW, LEFT, RIGHT
 
 #get directory from field
 def getDirectory(directory_field):
@@ -22,15 +22,16 @@ def browse():
     ent_directory.insert(tkinter.END, path)
 
 #run sorting file 
-def call_sorter(directory_field):
+def call_sorter(directory_field, output):
     sorter = Music_Sorter()
     sorter.parent_dir = getDirectory(directory_field)
+    sorter.output_field = output
     sorter.file()
 
 #creation of GUI items
 window = tkinter.Tk() #creates window
 window.title("MP3 Sorter")
-window.geometry("775x375") #width in pixels, not letters (width x height)
+window.geometry("775x500") #width in pixels, not letters (width x height)
 
 #containing frame
 frm_container = tkinter.Frame(master=window, relief=tkinter.RIDGE, borderwidth=2) #creates frame, assigns border type and width
@@ -47,9 +48,16 @@ lbl_directory = tkinter.Label(master=frm_directory0, text="Select a target direc
 ent_directory = tkinter.Entry(master=frm_directory1, width=100) #creates text field
 btn_directory = tkinter.Button(master=frm_directory1, text="Browse", command=browse, width=10)
 
+#output box
+frm_output = tkinter.Frame(master=frm_container)
+txt_output = tkinter.Text(master=frm_output, width=80, height=10)
+txt_output.config(state=DISABLED)
+scroll = tkinter.Scrollbar(master=frm_output, command=txt_output.yview)
+txt_output['yscrollcommand'] = scroll.set
+
 #Start button
 frm_action = tkinter.Frame(master=frm_container)
-btn_sort = tkinter.Button(master=frm_action, text="Start", command=lambda: call_sorter(ent_directory), width=10) #lambda format keeps method from calling at startup
+btn_sort = tkinter.Button(master=frm_action, text="Start", command=lambda: call_sorter(ent_directory,txt_output), width=10) #lambda format keeps method from calling at startup
 
 #"packing" items into window and frames
 frm_container.pack()
@@ -65,8 +73,13 @@ lbl_directory.pack(side=tkinter.LEFT) #adds label to frame
 ent_directory.pack(side=tkinter.LEFT, fill=tkinter.X)
 btn_directory.pack(side=tkinter.LEFT)
 
+#packing output box
+frm_output.grid(row=3, column=1, sticky="ew", padx=10, pady=20)
+txt_output.pack(side=tkinter.LEFT)
+scroll.pack(side=tkinter.RIGHT, fill=tkinter.Y)
+
 #packing start button
-frm_action.grid(row=3, column=1, sticky="es", padx=10, pady=(100, 10))
+frm_action.grid(row=4, column=1, sticky="es", padx=10, pady=10)
 btn_sort.pack(side=tkinter.RIGHT)
 
 window.mainloop()  #keeps the event loop running and window open
