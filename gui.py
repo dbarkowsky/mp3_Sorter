@@ -28,6 +28,10 @@ def call_sorter(directory_field, output):
     sorter.output_field = output
     sorter.file()
 
+
+
+###### initial window stuff goes below ######
+
 #creation of GUI items
 window = tkinter.Tk() #creates window
 window.title("MP3 Sorter")
@@ -50,8 +54,9 @@ btn_directory = tkinter.Button(master=frm_directory1, text="Browse", command=bro
 
 #output box
 frm_output = tkinter.Frame(master=frm_container)
-txt_output = tkinter.Text(master=frm_output, width=80, height=10)
+txt_output = tkinter.Text(master=frm_output, width=95, height=10)
 txt_output.config(state=DISABLED)
+txt_output.configure(font=("Consolas", 10))
 scroll = tkinter.Scrollbar(master=frm_output, command=txt_output.yview)
 txt_output['yscrollcommand'] = scroll.set
 
