@@ -3,17 +3,17 @@
 ################
 #tkinter terminology
 #master = parent element
-#relief = boarder style
+#relief = border style
 #side = alignment (acts like float)
 ################
 
 from music_sorter import Music_Sorter
 import tkinter
 from tkinter import Scrollbar, filedialog
-from tkinter.constants import DISABLED, EW, LEFT, RIGHT
+from tkinter.constants import DISABLED, EW, LEFT, NORMAL, RIGHT
 
 #get directory from field
-def getDirectory(directory_field):
+def get_directory(directory_field):
     return directory_field.get()
 
 #upon button click, opens file browser and puts selection in ent_directory
@@ -22,12 +22,48 @@ def browse():
     ent_directory.insert(tkinter.END, path)
 
 #run sorting file 
-def call_sorter(directory_field, output):
-    sorter = Music_Sorter()
-    sorter.parent_dir = getDirectory(directory_field)
+def call_sorter(sorter, directory_field, output):
+    sorter.parent_dir = get_directory(directory_field)
     sorter.output_field = output
     sorter.file()
+    btn_next.config(state=NORMAL)
 
+#move to next page to fill in metadata
+def fill_in_page(frm_container, sorter):
+    print("in fill_in_page")
+    #destroy all items inside frm_container (start fresh)
+    for item in frm_container.winfo_children():
+        item.destroy()
+
+    #create 1 row for each failed song; populate rows with fields/data
+    row_index = 0
+    for failed_song in sorter.failed_songs:
+        file_name = failed_song[failed_song.rindex("\\")+1:]
+
+        #Create and pack file name
+        frm_failed_song = tkinter.Frame(master=frm_container)
+        frm_failed_song.grid(row=row_index, column=0, sticky="w")
+        lbl_song = tkinter.Label(master=frm_failed_song, text=file_name, justify=LEFT)
+        lbl_song.pack(side=tkinter.LEFT)
+        #create and pack Artist fields
+        frm_artist = tkinter.Frame(master=frm_container)
+        frm_artist.grid(row=row_index, column=1)
+        ent_artist = tkinter.Entry(master=frm_artist)
+        ent_artist.pack()
+        #create and pack Album fields
+        frm_album = tkinter.Frame(master=frm_container)
+        frm_album.grid(row=row_index, column=2)
+        ent_album = tkinter.Entry(master=frm_album)
+        ent_album.pack()
+        #create and pack Year fields
+        frm_year = tkinter.Frame(master=frm_container)
+        frm_year.grid(row=row_index, column=3)
+        ent_year = tkinter.Entry(master=frm_year)
+        ent_year.pack()
+
+        row_index += 1
+    
+    
 
 
 ###### initial window stuff goes below ######
@@ -36,6 +72,9 @@ def call_sorter(directory_field, output):
 window = tkinter.Tk() #creates window
 window.title("MP3 Sorter")
 window.geometry("775x500") #width in pixels, not letters (width x height)
+
+#create Music_Sorter class object
+sorter = Music_Sorter()
 
 #containing frame
 frm_container = tkinter.Frame(master=window, relief=tkinter.RIDGE, borderwidth=2) #creates frame, assigns border type and width
@@ -60,9 +99,10 @@ txt_output.configure(font=("Consolas", 10))
 scroll = tkinter.Scrollbar(master=frm_output, command=txt_output.yview)
 txt_output['yscrollcommand'] = scroll.set
 
-#Start button
+#Start button and next button
 frm_action = tkinter.Frame(master=frm_container)
-btn_sort = tkinter.Button(master=frm_action, text="Start", command=lambda: call_sorter(ent_directory,txt_output), width=10) #lambda format keeps method from calling at startup
+btn_sort = tkinter.Button(master=frm_action, text="Start", command=lambda: call_sorter(sorter, ent_directory,txt_output), width=10) #lambda format keeps method from calling at startup
+btn_next = tkinter.Button(master=frm_action, text="Next", command=lambda: fill_in_page(frm_container, sorter), width=10)
 
 #"packing" items into window and frames
 frm_container.pack()
@@ -85,6 +125,8 @@ scroll.pack(side=tkinter.RIGHT, fill=tkinter.Y)
 
 #packing start button
 frm_action.grid(row=4, column=1, sticky="es", padx=10, pady=10)
+btn_next.pack(side=tkinter.RIGHT)
 btn_sort.pack(side=tkinter.RIGHT)
+btn_next.config(state=DISABLED)
 
 window.mainloop()  #keeps the event loop running and window open
