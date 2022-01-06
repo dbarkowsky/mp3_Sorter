@@ -1,2 +1,4 @@
 /Backup Test Files
 *.mp3
+/__pycache__
+/Test Folder

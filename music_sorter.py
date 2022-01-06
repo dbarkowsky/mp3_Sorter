@@ -98,10 +98,25 @@ class Music_Sorter:
         self.output_field.insert(tkinter.END, "\n>>" + str(self.failed_counter) + " song(s) failed to file properly.")
         self.output_field.config(state=DISABLED)
 
-        #adds user-entered metadata to failed files
-        def add_data():
-            print("In add_data")
+    #adds user-entered metadata to failed files
+    def add_data(self, song_list):
+        print("In add_data")
+
+        list_dict = {
+            "FILE_PATH": 0,
+            "TITLE": 1,
+            "ARTIST": 2,
+            "ALBUM": 3,
+            "YEAR": 4
+        }
         
-        #will file failed files now that they've been given metadata
-        def file_new_data():
-            print("in file_new_data")
+        for song in song_list:
+            file_path = song[list_dict["FILE_PATH"]]
+            file_name = file_path[file_path.rindex("\\")+1:]
+
+            eyed3_file = eyed3.load(file_path)
+            eyed3_file.tag.title = song[list_dict["TITLE"]]
+            eyed3_file.tag.artist = song[list_dict["ARTIST"]]
+            eyed3_file.tag.album = song[list_dict["ALBUM"]]
+            eyed3_file.tag.original_release_date = song[list_dict["YEAR"]] #original_release_date --> only good for setting, not getting
+            eyed3_file.tag.save(file_path)
