@@ -19,6 +19,8 @@ class Music_Sorter:
 
     def file(self):
         print("Target folder: " + self.parent_dir)
+        if self.parent_dir == "":
+            self.parent_dir = os.getcwd()
         self.output_field.config(state=NORMAL)
         self.output_field.insert(tkinter.END, ">>Target folder: " + self.parent_dir)
         #loop through files

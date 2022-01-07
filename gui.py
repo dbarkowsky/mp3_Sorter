@@ -27,17 +27,19 @@ def browse():
 
 #run sorting file 
 def call_sorter(sorter, directory_field, output):
+    output.config(state=NORMAL)
     sorter.parent_dir = get_directory(directory_field)
     sorter.output_field = output
     sorter.file()
     if sorter.failed_counter == 0 and sorter.counter == 0:
-        output.insert(tkinter.END, "\n>>There don't appear to be any .mp3 files here.\n>>Please double-check your directory.")
+        output.insert(tkinter.END, "\n>>There don't appear to be any .mp3 files here.\n>>Please double-check your directory.\n")
     elif sorter.failed_counter == 0:
-        output.insert(tkinter.END, "\n>>All files sorted successfully.\n>>You may now close the window.")
+        output.insert(tkinter.END, "\n>>All files sorted successfully.\n>>You may now close the window.\n")
+        btn_sort.config(state=DISABLED)
     else:
         btn_next.config(state=NORMAL)
-        output.insert(tkinter.END, "\n>>Click Next to address failed files.")
-    btn_sort.config(state=DISABLED)
+        output.insert(tkinter.END, "\n>>Click Next to address failed files.\n")
+        btn_sort.config(state=DISABLED)
     output.config(state=DISABLED)
 
 #destroy all objects in passed container (usually a frame)
@@ -69,7 +71,7 @@ def fill_in_page(frm_container, sorter):
     row_offset = 0 #offset to keep the array in bounds while changing GUI
 
     #instruction text and header font variable
-    instructions = "These files were missing important metadata tags. \nThe Artist and Album tags are mandatory for filing. \nThe Year tag is optional. \nFill in these fields, then click 'Tag and File' to continue. \nFiles without Artist and Album information will not be sorted."
+    instructions = "These files were missing important metadata tags. \nThe Artist and Album tags are mandatory for filing. \nThe Year tag is optional. \nFill in these fields, then click 'Tag & File' to continue. \nFiles without Artist and Album information will not be sorted."
     header_font = tkinter.font.Font(size=11, weight="bold", underline=1)
 
 
@@ -251,7 +253,7 @@ frm_container.columnconfigure(1, minsize=100)
 
 #intro text
 frm_text0 = tkinter.Frame(master=frm_container)
-lbl_text0 = tkinter.Label(master=frm_text0, text="Thank you for using this MP3 sorting tool. \n\nThis program is designed to target one folder and sort loose MP3 files into folders matching their artist and album tags. \n\nIt does not run recursively.\nIt will delete original files after moving them.\nBe certain before running that you want everything in the folder sorted.", justify=LEFT)
+lbl_text0 = tkinter.Label(master=frm_text0, text="Thank you for using this MP3 sorting tool. \n\nThis program is designed to target one folder and sort loose MP3 files into folders matching their artist and album tags. \n\nIt does not run recursively.\nIt will delete original files after moving them.\nBe certain before running that you want everything in the folder sorted. \nLeave the directory field blank to sort the current working directory.", justify=LEFT)
 
 #folder entry and browse button
 frm_directory0 = tkinter.Frame(master=frm_container)
