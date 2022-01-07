@@ -5,7 +5,7 @@ import eyed3
 import os
 import shutil
 import tkinter
-from tkinter.constants import DISABLED, NORMAL
+from tkinter.constants import NORMAL
 
 class Music_Sorter:
 
@@ -94,9 +94,9 @@ class Music_Sorter:
 
 
         print("Moved " + str(self.counter) + " files into Artist folders.")
-        self.output_field.insert(tkinter.END, "\n>>Moved " + str(self.counter) + " file(s) into Artist folders.")
+        self.output_field.insert(tkinter.END, "\n>>Moved " + str(self.counter) + " file(s) into Artist/Album folders.")
         self.output_field.insert(tkinter.END, "\n>>" + str(self.failed_counter) + " song(s) failed to file properly.")
-        self.output_field.config(state=DISABLED)
+        
 
     #adds user-entered metadata to failed files
     def add_data(self, song_list):

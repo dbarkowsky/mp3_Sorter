@@ -7,11 +7,13 @@
 #side = alignment (acts like float)
 ################
 
-from types import NoneType
+from os import stat
+from tkinter import font
 from music_sorter import Music_Sorter
 import tkinter
-from tkinter import Scrollbar, filedialog
-from tkinter.constants import DISABLED, EW, LEFT, NONE, NORMAL, RIGHT
+import tkinter.font
+from tkinter import filedialog
+from tkinter.constants import DISABLED, LEFT, NORMAL, X
 import eyed3
 
 #get directory from field
@@ -28,8 +30,15 @@ def call_sorter(sorter, directory_field, output):
     sorter.parent_dir = get_directory(directory_field)
     sorter.output_field = output
     sorter.file()
-    btn_next.config(state=NORMAL)
+    if sorter.failed_counter == 0 and sorter.counter == 0:
+        output.insert(tkinter.END, "\n>>There don't appear to be any .mp3 files here.\n>>Please double-check your directory.")
+    elif sorter.failed_counter == 0:
+        output.insert(tkinter.END, "\n>>All files sorted successfully.\n>>You may now close the window.")
+    else:
+        btn_next.config(state=NORMAL)
+        output.insert(tkinter.END, "\n>>Click Next to address failed files.")
     btn_sort.config(state=DISABLED)
+    output.config(state=DISABLED)
 
 #destroy all objects in passed container (usually a frame)
 def destroy_children(container):
@@ -41,7 +50,7 @@ def fill_in_page(frm_container, sorter):
     print("in fill_in_page")
     #destroy all items inside frm_container (start fresh)
     destroy_children(frm_container)
-    row_index = 0
+    
 
     #prepare constants
     list_dict = {
@@ -55,31 +64,49 @@ def fill_in_page(frm_container, sorter):
     #prepare 2d array that will hold data
     song_list = [] #file name, title, artist, album, year
 
+    #variables to control rows
+    row_index = 0 #row that it should be on (includes array locations)
+    row_offset = 0 #offset to keep the array in bounds while changing GUI
+
+    #instruction text and header font variable
+    instructions = "These files were missing important metadata tags. \nThe Artist and Album tags are mandatory for filing. \nThe Year tag is optional. \nFill in these fields, then click 'Tag and File' to continue. \nFiles without Artist and Album information will not be sorted."
+    header_font = tkinter.font.Font(size=11, weight="bold", underline=1)
+
+
+    #create and pack instructions
+    frm_text_blurb = tkinter.Frame(master=frm_container)
+    frm_text_blurb.grid(row=row_index + row_offset, column=0, sticky="w", pady=(1,4))
+    lbl_text_blurb = tkinter.Label(master=frm_text_blurb, text=instructions, justify=LEFT)
+    lbl_text_blurb.pack(side=tkinter.LEFT)
+    row_offset += 1
+
     #create headers columns
     frm_failed_song_header = tkinter.Frame(master=frm_container)
-    frm_failed_song_header.grid(row=row_index, column=0, pady=3, padx=2)
-    lbl_failed_song_header = tkinter.Label(master=frm_failed_song_header, text="File Name", justify=LEFT)
+    frm_failed_song_header.grid(row=row_index + row_offset, column=0, pady=3, padx=2)
+    lbl_failed_song_header = tkinter.Label(master=frm_failed_song_header, text="File Name", justify=LEFT, font=header_font)
     lbl_failed_song_header.pack(side=tkinter.LEFT)
 
     frm_title_header = tkinter.Frame(master=frm_container)
-    frm_title_header.grid(row=row_index, column=1, padx=2)
-    lbl_title_header = tkinter.Label(master=frm_title_header, text="Song Name", justify=LEFT)
+    frm_title_header.grid(row=row_index + row_offset, column=1, padx=2)
+    lbl_title_header = tkinter.Label(master=frm_title_header, text="Song Name", justify=LEFT, font=header_font)
     lbl_title_header.pack(side=tkinter.LEFT)
 
     frm_artist_header = tkinter.Frame(master=frm_container)
-    frm_artist_header.grid(row=row_index, column=2, padx=2)
-    lbl_artist_header = tkinter.Label(master=frm_artist_header, text="Artist", justify=LEFT)
+    frm_artist_header.grid(row=row_index + row_offset, column=2, padx=2)
+    lbl_artist_header = tkinter.Label(master=frm_artist_header, text="Artist", justify=LEFT, font=header_font)
     lbl_artist_header.pack(side=tkinter.LEFT)
 
     frm_album_header = tkinter.Frame(master=frm_container)
-    frm_album_header.grid(row=row_index, column=3, padx=2)
-    lbl_album_header = tkinter.Label(master=frm_album_header, text="Album", justify=LEFT)
+    frm_album_header.grid(row=row_index + row_offset, column=3, padx=2)
+    lbl_album_header = tkinter.Label(master=frm_album_header, text="Album", justify=LEFT, font=header_font)
     lbl_album_header.pack(side=tkinter.LEFT)
 
     frm_year_header = tkinter.Frame(master=frm_container)
-    frm_year_header.grid(row=row_index, column=4, padx=2)
-    lbl_year_header = tkinter.Label(master=frm_year_header, text="Year", justify=LEFT)
+    frm_year_header.grid(row=row_index + row_offset, column=4, padx=2)
+    lbl_year_header = tkinter.Label(master=frm_year_header, text="Year", justify=LEFT, font=header_font)
     lbl_year_header.pack(side=tkinter.LEFT)     
+
+    row_offset += 1
 
     #create 1 row for each failed song; populate rows with fields/data 
     for failed_song in sorter.failed_songs:
@@ -103,35 +130,35 @@ def fill_in_page(frm_container, sorter):
         print(song_list[row_index])
 
         #Create and pack file name
-        frm_failed_song = tkinter.Frame(master=frm_container)
-        frm_failed_song.grid(row=row_index + 1, column=0, sticky="w", pady=3, padx=2)
-        lbl_song = tkinter.Label(master=frm_failed_song, text=file_name, justify=LEFT)
-        lbl_song.pack(side=tkinter.LEFT)
+        frm_failed_song = tkinter.Frame(master=frm_container, width=60)
+        frm_failed_song.grid(row=row_index + row_offset, column=0, sticky="w", pady=3, padx=2)
+        lbl_song = tkinter.Label(master=frm_failed_song, text=file_name, justify=LEFT, width=60, anchor="w")
+        lbl_song.pack(side=tkinter.LEFT, expand=False)
         #create and pack Title fields
         frm_title = tkinter.Frame(master=frm_container)
-        frm_title.grid(row=row_index + 1, column=1, padx=2)
+        frm_title.grid(row=row_index + row_offset, column=1, padx=2)
         ent_title = tkinter.Entry(master=frm_title, width=30)
         if song_list[row_index][list_dict["TITLE"]] != None:
             ent_title.insert(tkinter.END, song_list[row_index][list_dict["TITLE"]])
         ent_title.pack()
         #create and pack Artist fields
         frm_artist = tkinter.Frame(master=frm_container)
-        frm_artist.grid(row=row_index + 1, column=2, padx=2)
+        frm_artist.grid(row=row_index + row_offset, column=2, padx=2)
         ent_artist = tkinter.Entry(master=frm_artist, width=30)
         if song_list[row_index][list_dict["ARTIST"]] != None:
             ent_artist.insert(tkinter.END, song_list[row_index][list_dict["ARTIST"]])
         ent_artist.pack()
         #create and pack Album fields
         frm_album = tkinter.Frame(master=frm_container)
-        frm_album.grid(row=row_index + 1, column=3, padx=2)
+        frm_album.grid(row=row_index + row_offset, column=3, padx=2)
         ent_album = tkinter.Entry(master=frm_album, width=30)
         if song_list[row_index][list_dict["ALBUM"]] != None:
             ent_album.insert(tkinter.END, song_list[row_index][list_dict["ALBUM"]])
         ent_album.pack()
         #create and pack Year fields
         frm_year = tkinter.Frame(master=frm_container)
-        frm_year.grid(row=row_index + 1, column=4, padx=2)
-        ent_year = tkinter.Entry(master=frm_year, width=10)
+        frm_year.grid(row=row_index + row_offset, column=4, padx=2)
+        ent_year = tkinter.Entry(master=frm_year, width=12)
         if song_list[row_index][list_dict["YEAR"]] != None:
             ent_year.insert(tkinter.END, song_list[row_index][list_dict["YEAR"]])
         ent_year.pack()
@@ -140,7 +167,7 @@ def fill_in_page(frm_container, sorter):
 
     #add Tag & File button
     frm_action = tkinter.Frame(master=frm_container)
-    frm_action.grid(row=row_index + 1, column=4, sticky="e")
+    frm_action.grid(row=row_index + row_offset, column=4, sticky="e", pady=3)
     btn_tag_file = tkinter.Button(master=frm_action, text="Tag & File", width=10, command=lambda: tag_and_file(sorter, song_list, frm_container))
     btn_tag_file.pack()
 
@@ -171,22 +198,38 @@ def tag_and_file(sorter, song_list, frm_container):
     #clear container again
     destroy_children(frm_container)
 
+    #create and pack output box
     frm_output = tkinter.Frame(master=frm_container)
-    frm_output.grid(row=0, column=1)
-    txt_output = tkinter.Text(master=frm_output)
+    frm_output.grid(row=0, column=1, pady=3)
+    txt_output = tkinter.Text(master=frm_output, width=120, height=25)
     scroll = tkinter.Scrollbar(master=frm_output, command=txt_output.yview)
     txt_output['yscrollcommand'] = scroll.set
     txt_output.pack()
+
+    #create and pack buttons
+    frm_buttons = tkinter.Frame(master=frm_container)
+    frm_buttons.grid(row=1, column=1, sticky="e", pady=3)
+    btn_close = tkinter.Button(master=frm_buttons, text="Close", width=10, command=lambda: window.destroy())
+    btn_close.pack(side=tkinter.RIGHT)
+    btn_tag_file = tkinter.Button(master=frm_buttons, text="Back", width=10,command=lambda: fill_in_page(frm_container, sorter))
+    btn_tag_file.pack(side=tkinter.RIGHT)
+    
 
     #reset sorter's variables
     sorter.output_field = txt_output
     sorter.failed_counter = 0
     sorter.counter = 0
+    sorter.failed_songs = []
 
     #add new data and call file() again
     sorter.add_data(song_list)
     sorter.file()
-    txt_output.insert(tkinter.END, "\n>>Thank you for using the MP3 Sorter.\n>>You may now close the window.")
+
+    if sorter.failed_counter == 0:
+        txt_output.insert(tkinter.END, "\n>>All files sorted successfully.\n>>You may now close the window.")
+        btn_tag_file.config(state=DISABLED)
+    else:
+        txt_output.insert(tkinter.END, "\n>>Click 'Back' to investigate these files again or click 'Close' to leave them unfiled.")
     txt_output.config(state=DISABLED)
     
     
@@ -208,7 +251,7 @@ frm_container.columnconfigure(1, minsize=100)
 
 #intro text
 frm_text0 = tkinter.Frame(master=frm_container)
-lbl_text0 = tkinter.Label(master=frm_text0, text="Thank you for using this MP3 sorting tool. \n\nThis program is designed to target one folder and sort loose MP3 files into folders matching their artist tags. \n\nIt does not run recursively.\nIt will delete original files after moving them.\nBe certain before running that you want everything in the folder sorted.", justify=LEFT)
+lbl_text0 = tkinter.Label(master=frm_text0, text="Thank you for using this MP3 sorting tool. \n\nThis program is designed to target one folder and sort loose MP3 files into folders matching their artist and album tags. \n\nIt does not run recursively.\nIt will delete original files after moving them.\nBe certain before running that you want everything in the folder sorted.", justify=LEFT)
 
 #folder entry and browse button
 frm_directory0 = tkinter.Frame(master=frm_container)
@@ -219,7 +262,7 @@ btn_directory = tkinter.Button(master=frm_directory1, text="Browse", command=bro
 
 #output box
 frm_output = tkinter.Frame(master=frm_container)
-txt_output = tkinter.Text(master=frm_output, width=95, height=10)
+txt_output = tkinter.Text(master=frm_output, width=95, height=13)
 txt_output.config(state=DISABLED)
 txt_output.configure(font=("Consolas", 10))
 scroll = tkinter.Scrollbar(master=frm_output, command=txt_output.yview)
